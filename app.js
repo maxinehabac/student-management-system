@@ -4,6 +4,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const flash = require('connect-flash');
+const helmet = require('helmet');
 const path = require('path');
 
 require('./config/db');
@@ -14,15 +15,29 @@ const studentRoutes = require('./routes/studentRoutes');
 const app = express();
 
 
+// =========================
+// SECURITY
+// =========================
+app.use(helmet({
+    contentSecurityPolicy: false
+}));
+
+
+// =========================
 // BODY PARSER
+// =========================
 app.use(bodyParser.urlencoded({ extended: true }));
 
 
+// =========================
 // STATIC FILES
+// =========================
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-// SESSION MIDDLEWARE
+// =========================
+// SESSION
+// =========================
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
@@ -30,43 +45,53 @@ app.use(session({
 }));
 
 
-// FLASH MIDDLEWARE
+// =========================
+// FLASH
+// =========================
 app.use(flash());
 
 
-// GLOBAL FLASH VARIABLES
+// =========================
+// GLOBAL FLASH MIDDLEWARE
+// =========================
 app.use((req, res, next) => {
 
-    res.locals.success = req.flash('success');
+    const success = req.flash('success');
+    const error = req.flash('error');
 
-    res.locals.error = req.flash('error');
+    res.locals.success = success.length ? success : null;
+    res.locals.error = error.length ? error : null;
 
     next();
 });
 
 
+// =========================
 // VIEW ENGINE
+// =========================
 app.set('view engine', 'ejs');
 
 
+// =========================
 // ROUTES
+// =========================
 app.use('/', authRoutes);
-
 app.use('/', studentRoutes);
 
-const helmet = require('helmet');
 
-app.use(helmet());
+// =========================
+// 404 HANDLER
+// =========================
+app.use((req, res) => {
+    res.status(404).render('404');
+});
 
 
+// =========================
 // SERVER
+// =========================
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
-});
-
-app.use((req, res) => {
-
-    res.status(404).render('404');
 });
