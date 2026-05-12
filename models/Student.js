@@ -1,5 +1,9 @@
 const db = require('../config/db');
 
+
+// =========================
+// GET ALL STUDENTS
+// =========================
 exports.getAllStudents = (callback) => {
 
     db.query(
@@ -8,6 +12,10 @@ exports.getAllStudents = (callback) => {
     );
 };
 
+
+// =========================
+// ADD STUDENT
+// =========================
 exports.addStudent = (student, callback) => {
 
     db.query(
@@ -17,6 +25,10 @@ exports.addStudent = (student, callback) => {
     );
 };
 
+
+// =========================
+// GET STUDENT BY ID
+// =========================
 exports.getStudentById = (id, callback) => {
 
     db.query(
@@ -26,6 +38,10 @@ exports.getStudentById = (id, callback) => {
     );
 };
 
+
+// =========================
+// UPDATE STUDENT
+// =========================
 exports.updateStudent = (id, student, callback) => {
 
     db.query(
@@ -35,6 +51,10 @@ exports.updateStudent = (id, student, callback) => {
     );
 };
 
+
+// =========================
+// DELETE STUDENT
+// =========================
 exports.deleteStudent = (id, callback) => {
 
     db.query(
@@ -44,6 +64,10 @@ exports.deleteStudent = (id, callback) => {
     );
 };
 
+
+// =========================
+// SEARCH STUDENTS
+// =========================
 exports.searchStudents = (keyword, callback) => {
 
     db.query(
@@ -53,11 +77,16 @@ exports.searchStudents = (keyword, callback) => {
     );
 };
 
+
+// =========================
+// COUNT STUDENTS
+// =========================
 exports.countStudents = (callback) => {
 
     db.query(
         'SELECT COUNT(*) AS total FROM students',
         (err, results) => {
+
             if (err) return callback(err, null);
 
             callback(null, results);

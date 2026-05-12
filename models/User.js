@@ -1,5 +1,9 @@
 const db = require('../config/db');
 
+
+// =========================
+// CREATE USER
+// =========================
 exports.createUser = (user, callback) => {
 
     db.query(
@@ -9,6 +13,10 @@ exports.createUser = (user, callback) => {
     );
 };
 
+
+// =========================
+// FIND USER BY EMAIL
+// =========================
 exports.findByEmail = (email, callback) => {
 
     db.query(

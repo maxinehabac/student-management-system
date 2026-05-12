@@ -1,7 +1,6 @@
 require('dotenv').config();
 
 const express = require('express');
-const bodyParser = require('body-parser');
 const session = require('express-session');
 const flash = require('connect-flash');
 const helmet = require('helmet');
@@ -16,17 +15,19 @@ const app = express();
 
 
 // =========================
-// SECURITY
+// SECURITY (Helmet)
 // =========================
-app.use(helmet({
-    contentSecurityPolicy: false
-}));
+app.use(
+    helmet({
+        contentSecurityPolicy: false
+    })
+);
 
 
 // =========================
 // BODY PARSER
 // =========================
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true })); // cleaner than body-parser
 
 
 // =========================
@@ -38,11 +39,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 // =========================
 // SESSION
 // =========================
-app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false
-}));
+app.use(
+    session({
+        secret: process.env.SESSION_SECRET,
+        resave: false,
+        saveUninitialized: false
+    })
+);
 
 
 // =========================
@@ -55,7 +58,6 @@ app.use(flash());
 // GLOBAL FLASH MIDDLEWARE
 // =========================
 app.use((req, res, next) => {
-
     const success = req.flash('success');
     const error = req.flash('error');
 
