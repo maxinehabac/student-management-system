@@ -43,3 +43,24 @@ exports.deleteStudent = (id, callback) => {
         callback
     );
 };
+
+exports.searchStudents = (keyword, callback) => {
+
+    db.query(
+        'SELECT * FROM students WHERE name LIKE ?',
+        [`%${keyword}%`],
+        callback
+    );
+};
+
+exports.countStudents = (callback) => {
+
+    db.query(
+        'SELECT COUNT(*) AS total FROM students',
+        (err, results) => {
+            if (err) return callback(err, null);
+
+            callback(null, results);
+        }
+    );
+};

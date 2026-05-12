@@ -1,5 +1,7 @@
 const express = require('express');
 
+const { body } = require('express-validator');
+
 const router = express.Router();
 
 const studentController = require('../controllers/studentController');
@@ -10,7 +12,19 @@ router.get('/', authMiddleware, studentController.home);
 
 router.get('/add', authMiddleware, studentController.showAddForm);
 
-router.post('/add', authMiddleware, studentController.addStudent);
+router.post(
+    '/add',
+
+    authMiddleware,
+
+    [
+        body('name').notEmpty(),
+        body('course').notEmpty(),
+        body('age').isNumeric()
+    ],
+
+    studentController.addStudent
+);
 
 router.get('/edit/:id', authMiddleware, studentController.showEditForm);
 

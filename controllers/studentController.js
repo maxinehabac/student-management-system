@@ -2,13 +2,24 @@ const Student = require('../models/Student');
 
 exports.home = (req, res) => {
 
-    Student.getAllStudents((err, results) => {
+    Student.getAllStudents((err, students) => {
 
         if (err) throw err;
 
-        res.render('students/index', {
-            students: results
+        // STEP 1: get total count inside callback chain
+        Student.countStudents((err2, countResult) => {
+
+            if (err2) throw err2;
+
+            const totalStudents = countResult[0].total;
+
+            // STEP 2: pass BOTH values to EJS
+            res.render('students/index', {
+                students: students,
+                totalStudents: totalStudents
+            });
         });
+
     });
 };
 
@@ -26,7 +37,13 @@ exports.addStudent = (req, res) => {
 
     Student.addStudent(student, (err) => {
 
-        if (err) throw err;
+        if (err) {
+            req.flash('error', 'Failed to add student');
+
+            return res.redirect('/add');
+        }
+
+        req.flash('success', 'Student added successfully');
 
         res.redirect('/');
     });
@@ -57,7 +74,14 @@ exports.updateStudent = (req, res) => {
         updatedStudent,
         (err) => {
 
-            if (err) throw err;
+            if (err) {
+
+                req.flash('error', 'Update failed');
+
+                return res.redirect('/');
+            }
+
+            req.flash('success', 'Student updated successfully');
 
             res.redirect('/');
         }
@@ -68,7 +92,14 @@ exports.deleteStudent = (req, res) => {
 
     Student.deleteStudent(req.params.id, (err) => {
 
-        if (err) throw err;
+        if (err) {
+
+            req.flash('error', 'Delete failed');
+
+            return res.redirect('/');
+        }
+
+        req.flash('success', 'Student deleted successfully');
 
         res.redirect('/');
     });
