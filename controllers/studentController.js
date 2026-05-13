@@ -1,28 +1,58 @@
 const Student = require('../models/Student');
 const { validationResult } = require('express-validator');
 
+const fs = require('fs');
+const path = require('path');
+
 
 // =========================
-// DASHBOARD
+// DASHBOARD + SEARCH
 // =========================
 exports.home = (req, res) => {
 
-    Student.getAllStudents((err, students) => {
+    const keyword = req.query.search;
 
-        if (err) throw err;
+    // SEARCH STUDENT
+    if (keyword) {
 
-        Student.countStudents((err2, countResult) => {
+        Student.searchStudents(keyword, (err, students) => {
 
-            if (err2) throw err2;
+            if (err) throw err;
 
-            const totalStudents = countResult[0].total;
+            Student.countStudents((err2, countResult) => {
 
-            res.render('students/index', {
-                students,
-                totalStudents
+                if (err2) throw err2;
+
+                const totalStudents = countResult[0].total;
+
+                res.render('students/index', {
+                    students,
+                    totalStudents
+                });
             });
         });
-    });
+    }
+
+    // NORMAL DASHBOARD
+    else {
+
+        Student.getAllStudents((err, students) => {
+
+            if (err) throw err;
+
+            Student.countStudents((err2, countResult) => {
+
+                if (err2) throw err2;
+
+                const totalStudents = countResult[0].total;
+
+                res.render('students/index', {
+                    students,
+                    totalStudents
+                });
+            });
+        });
+    }
 };
 
 
@@ -35,14 +65,14 @@ exports.showAddForm = (req, res) => {
 
 
 // =========================
-// ADD STUDENT (WITH IMAGE SUPPORT)
+// ADD STUDENT
 // =========================
 exports.addStudent = (req, res) => {
 
-    // validation check
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
+
         req.flash('error', errors.array()[0].msg);
         return res.redirect('/add');
     }
@@ -51,14 +81,13 @@ exports.addStudent = (req, res) => {
         name: req.body.name,
         course: req.body.course,
         age: req.body.age,
-
-        // ✅ MULTER IMAGE HANDLING
         image: req.file ? req.file.filename : null
     };
 
     Student.addStudent(student, (err) => {
 
         if (err) {
+
             req.flash('error', 'Failed to add student');
             return res.redirect('/add');
         }
@@ -90,26 +119,54 @@ exports.showEditForm = (req, res) => {
 // =========================
 exports.updateStudent = (req, res) => {
 
-    const updatedStudent = {
-        name: req.body.name,
-        course: req.body.course,
-        age: req.body.age
-    };
+    Student.getStudentById(req.params.id, (err, results) => {
 
-    // ONLY add image if new file uploaded
-    if (req.file) {
-        updatedStudent.image = req.file.filename;
-    }
+        if (err || results.length === 0) {
 
-    Student.updateStudent(req.params.id, updatedStudent, (err) => {
-
-        if (err) {
-            req.flash('error', 'Update failed');
+            req.flash('error', 'Student not found');
             return res.redirect('/');
         }
 
-        req.flash('success', 'Student updated successfully');
-        res.redirect('/');
+        const oldStudent = results[0];
+
+        const updatedStudent = {
+            name: req.body.name,
+            course: req.body.course,
+            age: req.body.age
+        };
+
+        // NEW IMAGE UPLOADED
+        if (req.file) {
+
+            updatedStudent.image = req.file.filename;
+
+            // DELETE OLD IMAGE
+            if (oldStudent.image) {
+
+                const oldImagePath = path.join(
+                    __dirname,
+                    '../public/uploads',
+                    oldStudent.image
+                );
+
+                if (fs.existsSync(oldImagePath)) {
+
+                    fs.unlinkSync(oldImagePath);
+                }
+            }
+        }
+
+        Student.updateStudent(req.params.id, updatedStudent, (err2) => {
+
+            if (err2) {
+
+                req.flash('error', 'Update failed');
+                return res.redirect('/');
+            }
+
+            req.flash('success', 'Student updated successfully');
+            res.redirect('/');
+        });
     });
 };
 
@@ -119,14 +176,44 @@ exports.updateStudent = (req, res) => {
 // =========================
 exports.deleteStudent = (req, res) => {
 
-    Student.deleteStudent(req.params.id, (err) => {
+    // GET STUDENT FIRST
+    Student.getStudentById(req.params.id, (err, results) => {
 
-        if (err) {
-            req.flash('error', 'Delete failed');
+        if (err || results.length === 0) {
+
+            req.flash('error', 'Student not found');
             return res.redirect('/');
         }
 
-        req.flash('success', 'Student deleted successfully');
-        res.redirect('/');
+        const student = results[0];
+
+        // DELETE IMAGE IF EXISTS
+        if (student.image) {
+
+            const imagePath = path.join(
+                __dirname,
+                '../public/uploads',
+                student.image
+            );
+
+            // CHECK IF FILE EXISTS
+            if (fs.existsSync(imagePath)) {
+
+                fs.unlinkSync(imagePath);
+            }
+        }
+
+        // DELETE STUDENT FROM DATABASE
+        Student.deleteStudent(req.params.id, (err2) => {
+
+            if (err2) {
+
+                req.flash('error', 'Delete failed');
+                return res.redirect('/');
+            }
+
+            req.flash('success', 'Student deleted successfully');
+            res.redirect('/');
+        });
     });
 };

@@ -161,7 +161,7 @@ student-management-system/
 ## 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/student-management-system.git
+git clone https://github.com/maxinehabac/student-management-system.git
 ```
 
 ---
@@ -400,8 +400,10 @@ Possible future enhancements:
 
 Developed by:
 
-- Your Name
-- Group Members
+- Maxine Rhone Habac
+- Rhea Mae Vallestero
+- Jamaica Lomocso
+- Mary Ruth Vallestero
 
 Course:
 PC2204 – Integrative Programming and Technologies
