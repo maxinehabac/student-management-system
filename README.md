@@ -280,18 +280,6 @@ npx nodemon app.js
 
 The application includes a search feature that allows users to search students by:
 - Name
-- Course
-- Age
-
-Example:
-
-```sql
-SELECT * FROM students
-WHERE
-    name LIKE '%keyword%'
-    OR course LIKE '%keyword%'
-    OR age LIKE '%keyword%'
-```
 
 ---
 
